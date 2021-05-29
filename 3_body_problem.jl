@@ -111,7 +111,8 @@ using Interact
     calculate(m0,m1,m2, s_len)
 end
 
-
+#BELOW example where not necessary to drag time slider
+#time will go with the observable timer
 using WebIO
 #WebIO.install_jupyter_nbextension()
 using Interact
