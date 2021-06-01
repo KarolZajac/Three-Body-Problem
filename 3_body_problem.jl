@@ -37,7 +37,8 @@ function fun(x, y, yprim)
 end
 
 using Plots
-
+#plot theme
+#and randoms for stars
 theme(:dark)
 random = rand(50)
 random1 = rand(50)
@@ -45,7 +46,7 @@ random2 = rand(50)
 random3 = rand(50)
 
 
-function calculate(m0, m1, m2, time)    
+function calculate(m0, m1, m2, time, trail_len, trail_size)    
 
     # init positions and speeds 
     init0 = [ 1.0; -1.0; 0.0; 0.0]
@@ -76,23 +77,22 @@ function calculate(m0, m1, m2, time)
     #stars_x = vcat(random*xmin, random1*xmax, random*xmin, random1*xmax)
     #stars_y = vcat(random2*ymin, random3*ymax, random3*ymax, random2*ymin)
     
-    
-    if(t2-300 >= t1)
-        plot(pos0[t2-300:t2-2,X], pos0[t2-300:t2-2,Y], size=(1000,500), legend= :outertopright, color="green", label="Earth trail",linewidth=3,ribbon =0.05) 
+    if(t2-trail_len >= t1)
+        plot(pos0[t2-trail_len:t2-2,X], pos0[t2-trail_len:t2-2,Y], size=(1000,500), legend= :outertopright, color="green", label="Earth trail",linewidth=3,ribbon =trail_size/100) 
         #scatter!(stars_x, stars_y, markersize=0.5)
         scatter!(pos0[t2-2:t2,X], pos0[t2-2:t2,Y], label="Earth", color="green", markersize=m0)
-        plot!(pos1[t2-300:t2-2,X], pos1[t2-300:t2-2,Y], color="grey", label="Jupiter trail",linewidth=3,ribbon =0.05)
+        plot!(pos1[t2-trail_len:t2-2,X], pos1[t2-trail_len:t2-2,Y], color="grey", label="Jupiter trail",linewidth=3,ribbon =trail_size/100)
         scatter!(pos1[t2-2:t2,X], pos1[t2-2:t2,Y], label ="Jupiter", color="grey", markersize=m1, markershape=:heptagon)
-        plot!(pos2[t2-300:t2-2,X], pos2[t2-300:t2-2,Y], color="orange", label="Star trail",linewidth=3,ribbon =0.05)
+        plot!(pos2[t2-trail_len:t2-2,X], pos2[t2-trail_len:t2-2,Y], color="orange", label="Star trail",linewidth=3,ribbon =trail_size/100)
         scatter!(pos2[t2-2:t2,X], pos2[t2-2:t2,Y], label ="Star", color="orange", markersize=m2, markershape=:star4)
         scatter!(mass_centrum_x[t2-1:t2], mass_centrum_y[t2-1:t2], label="centre of mass",linewidth=3)
     else
-        plot(pos0[t1:t2-2,X], pos0[t1:t2-2,Y], size=(1000,500), legend= :outertopright, color="green", label="Earth trail",linewidth=3,ribbon =0.05)
+        plot(pos0[t1:t2-2,X], pos0[t1:t2-2,Y], size=(1000,500), legend= :outertopright, color="green", label="Earth trail",linewidth=3,ribbon =trail_size/100)
         #scatter!(stars_x, stars_y, markersize=0.5)
         scatter!(pos0[t2-2:t2,X], pos0[t2-2:t2,Y], label="Earth", color="green", markersize=m0)
-        plot!(pos1[t1:t2-2,X], pos1[t1:t2-2,Y], color="grey", label="Jupiter trail",linewidth=3,ribbon =0.05)
+        plot!(pos1[t1:t2-2,X], pos1[t1:t2-2,Y], color="grey", label="Jupiter trail",linewidth=3,ribbon =trail_size/100)
         scatter!(pos1[t2-2:t2,X], pos1[t2-2:t2,Y], label ="Jupiter", color="grey", markersize=m1, markershape=:heptagon)
-        plot!(pos2[t1:t2-2,X], pos2[t1:t2-2,Y], color="orange", label="Star trail",linewidth=3,ribbon =0.05)
+        plot!(pos2[t1:t2-2,X], pos2[t1:t2-2,Y], color="orange", label="Star trail",linewidth=3,ribbon =trail_size/100)
         scatter!(pos2[t2-2:t2,X], pos2[t2-2:t2,Y], label ="Star", color="orange", markersize=m2, markershape=:star4)
         scatter!(mass_centrum_x[t2-1:t2], mass_centrum_y[t2-1:t2], label="centre of mass",linewidth=3)
     end
@@ -100,29 +100,39 @@ end
 
 
 
+
+
 using WebIO
 #WebIO.install_jupyter_nbextension()
 using Interact
 
-@manipulate for m0 = widget(5:20, label="EARTH MASS"),
+
+#interaction with simulation by changing massess of the bodies and changing sim time
+sim = @manipulate for m0 = widget(5:20, label="EARTH MASS"),
                 m1 = widget(5:20, label="JUPITER MASS"),
                 m2 = widget(5:20, label="STAR MASS"),
+                trail_len = widget(0:1:500, label="TRAILS LENGTH"),
+                trail_size = widget(1:1:10, label="TRAILS SIZE"),
                 s_len = widget(0.1:0.01:10, label="SIMULATION TIME")
-    calculate(m0,m1,m2, s_len)
+                
+    calculate(m0,m1,m2, s_len, trail_len, trail_size)
 end
 
 #BELOW example where not necessary to drag time slider
-#time will go with the observable timer
+#time will go with the observable timer which stops at destination time
 using WebIO
 #WebIO.install_jupyter_nbextension()
 using Interact
 
-timer = Observable(0.0)
+timer = Observable(0.1)
 @async while true
-    sleep(0.1)
-    timer[]=timer[]+0.1
+    if timer[] < 2
+        sleep(0.01)
+        timer[]=timer[]+0.01
+    else
+        break
+    end
 end
-
 
 @manipulate for m0 = widget(5:20, label="EARTH MASS", color="green"),
                 m1 = widget(5:20, label="JUPITER MASS"),
